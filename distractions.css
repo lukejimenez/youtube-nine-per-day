@@ -1,0 +1,71 @@
+/* Extra distraction hiding, ported from the user's uBlock Origin cosmetic
+   filters for www.youtube.com. One rule per selector on purpose: a single
+   invalid selector would otherwise void a whole comma-separated rule. */
+
+#contents-container > .ytd-rich-shelf-renderer.style-scope {
+  display: none !important;
+}
+
+#content > .ytd-rich-section-renderer.style-scope {
+  display: none !important;
+}
+
+.ytwTalkToRecsTalkToRecsWrapper {
+  display: none !important;
+}
+
+.ytwTalkToRecsTopCornerButton {
+  display: none !important;
+}
+
+ytd-rich-section-renderer.ytd-rich-grid-renderer.style-scope > .ytd-rich-section-renderer.style-scope {
+  display: none !important;
+}
+
+ytd-item-section-renderer.ytd-watch-next-secondary-results-renderer.style-scope {
+  display: none !important;
+}
+
+#scroll-container > .yt-chip-cloud-renderer.style-scope {
+  display: none !important;
+}
+
+#chatframe {
+  display: none !important;
+}
+
+#chat {
+  display: none !important;
+}
+
+ytd-guide-section-renderer.ytd-guide-renderer.style-scope:nth-of-type(5) {
+  display: none !important;
+}
+
+ytd-guide-section-renderer.ytd-guide-renderer.style-scope:nth-of-type(4) {
+  display: none !important;
+}
+
+#voice-search-button > .ytd-masthead.style-scope > yt-button-shape {
+  display: none !important;
+}
+
+.ytSearchboxComponentInputBoxAlignFocused.ytSearchboxComponentInputBoxUnified.ytSearchboxComponentInputBoxDark.ytSearchboxComponentInputBox > div > .ytSpecButtonViewModelHost {
+  display: none !important;
+}
+
+#icon > .yt-icon-button.style-scope {
+  display: none !important;
+}
+
+#buttons > ytd-button-renderer.ytd-masthead.style-scope > yt-button-shape {
+  display: none !important;
+}
+
+#comments > .ytd-comments.style-scope {
+  display: none !important;
+}
+
+.ytd-app.style-scope.with-chipbar {
+  display: none !important;
+}

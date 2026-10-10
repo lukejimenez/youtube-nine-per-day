@@ -8,7 +8,7 @@ const CAPTURE_TIMEOUT_MS = 20000;
 const ROLLOVER_HOUR = 4; // the "day" starts at 4am local time
 const ROOT_ID = "yt10-root";
 
-let snapshot = null; // { day, videos: [{id, title, channel}], watched: [id] }
+let snapshot = null; // { day, videos: [{id, title, channel}], progress: {id: 0..1} }
 let loaded = false;
 let captureStart = 0;
 let lastDebug = "no data yet";
@@ -87,18 +87,27 @@ async function tryCapture() {
     document.querySelectorAll('ytd-rich-item-renderer a[href^="/watch"]').length
   } watch links, ${videos.length} valid`;
   if (videos.length >= LIMIT || (timedOut && videos.length >= MIN_ON_TIMEOUT)) {
-    snapshot = { day: dayKey(), videos, watched: [] };
+    snapshot = { day: dayKey(), videos, progress: {} };
     await save();
   }
 }
 
-// ---- watched tracking ----------------------------------------------------
+// ---- progress tracking ---------------------------------------------------
 
-async function markWatchedIfListed() {
+// Like YouTube's own red bar: remember how far into each listed video you got.
+async function trackProgress() {
   if (!snapshot || location.pathname !== "/watch") return;
   const id = new URLSearchParams(location.search).get("v");
-  if (id && snapshot.videos.some((v) => v.id === id) && !snapshot.watched.includes(id)) {
-    snapshot.watched.push(id);
+  if (!id || !snapshot.videos.some((v) => v.id === id)) return;
+  if (document.querySelector("#movie_player.ad-showing")) return; // don't count ads
+  const video = document.querySelector("video");
+  if (!video || !isFinite(video.duration) || video.duration <= 0) return;
+
+  let frac = video.currentTime / video.duration;
+  if (frac > 0.95) frac = 1;
+  snapshot.progress = snapshot.progress || {};
+  if (frac > (snapshot.progress[id] || 0) + 0.01 || (frac === 1 && snapshot.progress[id] !== 1)) {
+    snapshot.progress[id] = frac;
     await save();
   }
 }
@@ -157,11 +166,20 @@ function buildRoot() {
   for (const v of videos) {
     const a = el("a", "yt10-card");
     a.href = `/watch?v=${encodeURIComponent(v.id)}`;
-    if (snapshot.watched.includes(v.id)) a.classList.add("yt10-watched");
+    const thumb = el("div", "yt10-thumb");
     const img = el("img");
     img.src = `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
     img.alt = "";
-    a.append(img, el("div", "yt10-title", v.title || v.id), el("div", "yt10-channel", v.channel));
+    thumb.append(img);
+    const frac = (snapshot.progress && snapshot.progress[v.id]) || 0;
+    if (frac > 0) {
+      const bar = el("div", "yt10-progress");
+      const fill = el("div", "yt10-progress-fill");
+      fill.style.width = `${Math.round(frac * 100)}%`;
+      bar.append(fill);
+      thumb.append(bar);
+    }
+    a.append(thumb, el("div", "yt10-title", v.title || v.id), el("div", "yt10-channel", v.channel));
     grid.append(a);
   }
   root.append(grid);
@@ -197,7 +215,6 @@ function schedule() {
     syncHomeClass();
     if (!loaded) return;
     if (isHome()) await tryCapture();
-    await markWatchedIfListed();
     render();
     if (await fillMissing()) render();
   }, 200);
@@ -215,3 +232,4 @@ window.addEventListener("yt-navigate-finish", () => {
 window.addEventListener("popstate", schedule);
 // Re-check capture while the feed is still loading but nothing is mutating.
 setInterval(schedule, 2000);
+setInterval(trackProgress, 2000);

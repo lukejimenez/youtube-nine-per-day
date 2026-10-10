@@ -42,7 +42,28 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   text-decoration: none;
 }
 
+#yt10-root .yt10-thumb {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#yt10-root .yt10-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#yt10-root .yt10-progress-fill {
+  height: 100%;
+  background: #f00;
+}
+
 #yt10-root a.yt10-card img {
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
@@ -65,10 +86,6 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   margin-top: 2px;
   font-size: 13px;
   color: var(--yt-spec-text-secondary, #606060);
-}
-
-#yt10-root a.yt10-card.yt10-watched {
-  opacity: 0.4;
 }
 
 /* Dark mode: YouTube's theme variables aren't reliably available here. */
