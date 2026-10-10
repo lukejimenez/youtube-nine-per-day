@@ -1,0 +1,84 @@
+/* Hide YouTube's live home feed (we only read from it, never show it). */
+/* Collapse rather than display:none: YouTube sizes/renders the grid based on
+   its width, so a zero-width grid may render few or no cards to read. */
+html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#yt10-root {
+  padding: 16px 32px;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-family: Roboto, Arial, sans-serif;
+}
+
+#yt10-root .yt10-header {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+#yt10-root .yt10-sub {
+  font-size: 13px;
+  color: var(--yt-spec-text-secondary, #606060);
+  margin-bottom: 20px;
+}
+
+#yt10-root .yt10-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Sized from viewport height so all 3 rows fit without scrolling:
+     (height - masthead/padding/gaps/text rows) * 16/9 + column gaps. */
+  max-width: min(1200px, calc((100vh - 350px) * 1.7778 + 32px));
+  margin: 0 auto;
+  gap: 20px 16px;
+}
+
+#yt10-root a.yt10-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+#yt10-root a.yt10-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--yt-spec-badge-chip-background, #e5e5e5);
+}
+
+#yt10-root .yt10-title {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+#yt10-root .yt10-channel {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+#yt10-root a.yt10-card.yt10-watched {
+  opacity: 0.4;
+}
+
+/* Dark mode: YouTube's theme variables aren't reliably available here. */
+html[dark] #yt10-root,
+html[dark] #yt10-root .yt10-header,
+html[dark] #yt10-root .yt10-title {
+  color: #fff;
+}
+
+html[dark] #yt10-root .yt10-sub,
+html[dark] #yt10-root .yt10-channel {
+  color: #aaa;
+}

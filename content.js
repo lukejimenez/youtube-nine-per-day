@@ -1,0 +1,217 @@
+// YouTube Ten a Day
+// Snapshots the first 10 videos YouTube serves on the home page each day,
+// then shows only that frozen list for the rest of the day.
+
+const LIMIT = 9; // 3x3 grid
+const MIN_ON_TIMEOUT = 5; // save fewer than LIMIT if the feed is slow/thin
+const CAPTURE_TIMEOUT_MS = 20000;
+const ROLLOVER_HOUR = 4; // the "day" starts at 4am local time
+const ROOT_ID = "yt10-root";
+
+let snapshot = null; // { day, videos: [{id, title, channel}], watched: [id] }
+let loaded = false;
+let captureStart = 0;
+let lastDebug = "no data yet";
+
+function dayKey() {
+  const d = new Date(Date.now() - ROLLOVER_HOUR * 3600 * 1000);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+const isHome = () => location.pathname === "/";
+
+async function load() {
+  const { snapshot: s } = await browser.storage.local.get("snapshot");
+  snapshot = s && s.day === dayKey() ? s : null;
+  loaded = true;
+}
+
+function save() {
+  return browser.storage.local.set({ snapshot });
+}
+
+// ---- capture -------------------------------------------------------------
+
+function videoIdFromHref(href) {
+  try {
+    const u = new URL(href, location.origin);
+    if (u.pathname !== "/watch" || u.searchParams.has("list")) return null;
+    return u.searchParams.get("v");
+  } catch {
+    return null;
+  }
+}
+
+function extractCard(card) {
+  if (card.querySelector("ytd-ad-slot-renderer, ad-badge-view-model, [aria-label='Sponsored']")) return null;
+  const link = card.querySelector('a[href^="/watch"]');
+  if (!link) return null;
+  const id = videoIdFromHref(link.getAttribute("href"));
+  if (!id) return null;
+
+  const titleEl = card.querySelector("#video-title, h3, [title]");
+  const title =
+    (titleEl && (titleEl.getAttribute("title") || titleEl.textContent)) ||
+    link.getAttribute("title") ||
+    link.getAttribute("aria-label") ||
+    "";
+  const channelEl = card.querySelector(
+    "ytd-channel-name a, a[href^='/@'], .yt-content-metadata-view-model-wiz__metadata-text"
+  );
+  return {
+    id,
+    title: title.trim().replace(/\s+/g, " "),
+    channel: channelEl ? channelEl.textContent.trim() : "",
+  };
+}
+
+function collect() {
+  const seen = new Set();
+  const videos = [];
+  for (const card of document.querySelectorAll("ytd-rich-item-renderer")) {
+    const v = extractCard(card);
+    if (!v || seen.has(v.id)) continue;
+    seen.add(v.id);
+    videos.push(v);
+    if (videos.length === LIMIT) break;
+  }
+  return videos;
+}
+
+async function tryCapture() {
+  if (snapshot) return;
+  if (!captureStart) captureStart = Date.now();
+  const videos = collect();
+  const timedOut = Date.now() - captureStart > CAPTURE_TIMEOUT_MS;
+  lastDebug = `${document.querySelectorAll("ytd-rich-item-renderer").length} cards, ${
+    document.querySelectorAll('ytd-rich-item-renderer a[href^="/watch"]').length
+  } watch links, ${videos.length} valid`;
+  if (videos.length >= LIMIT || (timedOut && videos.length >= MIN_ON_TIMEOUT)) {
+    snapshot = { day: dayKey(), videos, watched: [] };
+    await save();
+  }
+}
+
+// ---- watched tracking ----------------------------------------------------
+
+async function markWatchedIfListed() {
+  if (!snapshot || location.pathname !== "/watch") return;
+  const id = new URLSearchParams(location.search).get("v");
+  if (id && snapshot.videos.some((v) => v.id === id) && !snapshot.watched.includes(id)) {
+    snapshot.watched.push(id);
+    await save();
+  }
+}
+
+// ---- fill gaps -----------------------------------------------------------
+
+// Some cards (e.g. collabs) don't expose a channel in the feed DOM. YouTube's
+// same-origin oEmbed endpoint gives us the channel and title by video ID.
+const oembedTried = new Set();
+
+async function fillMissing() {
+  if (!snapshot) return false;
+  let changed = false;
+  for (const v of snapshot.videos) {
+    if ((v.channel && v.title) || oembedTried.has(v.id)) continue;
+    oembedTried.add(v.id);
+    try {
+      const res = await fetch(
+        `/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${v.id}`)}`
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!v.channel && data.author_name) { v.channel = data.author_name; changed = true; }
+      if (!v.title && data.title) { v.title = data.title; changed = true; }
+    } catch {}
+  }
+  if (changed) await save();
+  return changed;
+}
+
+// ---- rendering -----------------------------------------------------------
+
+function el(tag, className, text) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function buildRoot() {
+  const root = el("div");
+  root.id = ROOT_ID;
+  if (!snapshot) {
+    root.append(
+      el("div", "yt10-header", "Capturing today's recommendations…"),
+      el(
+        "div",
+        "yt10-sub",
+        `Waiting for YouTube to load your feed. (debug: ${lastDebug})`
+      )
+    );
+    return root;
+  }
+  const videos = snapshot.videos.slice(0, LIMIT); // trims older 10-item snapshots
+  const grid = el("div", "yt10-grid");
+  for (const v of videos) {
+    const a = el("a", "yt10-card");
+    a.href = `/watch?v=${encodeURIComponent(v.id)}`;
+    if (snapshot.watched.includes(v.id)) a.classList.add("yt10-watched");
+    const img = el("img");
+    img.src = `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
+    img.alt = "";
+    a.append(img, el("div", "yt10-title", v.title || v.id), el("div", "yt10-channel", v.channel));
+    grid.append(a);
+  }
+  root.append(grid);
+  return root;
+}
+
+function render() {
+  const existing = document.getElementById(ROOT_ID);
+  if (!isHome()) {
+    if (existing) existing.remove();
+    return;
+  }
+  const browseEl = document.querySelector('ytd-browse[page-subtype="home"]');
+  if (!browseEl) return;
+  const root = buildRoot();
+  // Skip DOM churn if nothing changed.
+  if (existing && existing.parentElement === browseEl && existing.isEqualNode(root)) return;
+  if (existing) existing.remove();
+  browseEl.prepend(root);
+}
+
+// ---- wiring --------------------------------------------------------------
+
+function syncHomeClass() {
+  document.documentElement.classList.toggle("yt10-home", isHome());
+}
+
+let timer = null;
+function schedule() {
+  if (timer) return;
+  timer = setTimeout(async () => {
+    timer = null;
+    syncHomeClass();
+    if (!loaded) return;
+    if (isHome()) await tryCapture();
+    await markWatchedIfListed();
+    render();
+    if (await fillMissing()) render();
+  }, 200);
+}
+
+syncHomeClass(); // synchronously at document_start so the feed never flashes
+
+load().then(schedule);
+
+new MutationObserver(schedule).observe(document, { childList: true, subtree: true });
+window.addEventListener("yt-navigate-finish", () => {
+  captureStart = 0;
+  schedule();
+});
+window.addEventListener("popstate", schedule);
+// Re-check capture while the feed is still loading but nothing is mutating.
+setInterval(schedule, 2000);
