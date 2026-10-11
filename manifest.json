@@ -11,7 +11,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
-      "css": ["content.css", "distractions.css", "search.css", "subscriptions.css", "watch.css"],
+      "css": ["content.css", "distractions.css", "search.css", "subscriptions.css"],
       "run_at": "document_start"
     }
   ]
