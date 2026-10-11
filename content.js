@@ -1,6 +1,7 @@
 // YouTube Ten a Day
-// Snapshots the first 10 videos YouTube serves on the home page each day,
-// then shows only that frozen list for the rest of the day.
+// Snapshots the first 9 videos YouTube serves on the home page each day
+// (skipping any shown yesterday), then shows only that frozen list for the
+// rest of the day.
 
 const LIMIT = 9; // 3x3 grid
 const MIN_ON_TIMEOUT = 5; // save fewer than LIMIT if the feed is slow/thin
@@ -9,21 +10,41 @@ const ROLLOVER_HOUR = 4; // the "day" starts at 4am local time
 const ROOT_ID = "yt10-root";
 
 let snapshot = null; // { day, videos: [{id, title, channel}], progress: {id: 0..1} }
+let previous = null; // { day, ids: [videoId] } from the last snapshot before today's
 let loaded = false;
 let captureStart = 0;
 let lastDebug = "no data yet";
 
-function dayKey() {
-  const d = new Date(Date.now() - ROLLOVER_HOUR * 3600 * 1000);
+function dayKey(daysAgo = 0) {
+  const d = new Date(Date.now() - ROLLOVER_HOUR * 3600 * 1000 - daysAgo * 24 * 3600 * 1000);
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+// Videos shown yesterday can't be picked again today.
+function excludedIds() {
+  return previous && previous.day === dayKey(1) ? new Set(previous.ids) : new Set();
 }
 
 const isHome = () => location.pathname === "/";
 
 async function load() {
-  const { snapshot: s } = await browser.storage.local.get("snapshot");
-  snapshot = s && s.day === dayKey() ? s : null;
+  const stored = await browser.storage.local.get(["snapshot", "previous"]);
+  snapshot = stored.snapshot || null;
+  previous = stored.previous || null;
+  await rotateIfStale();
   loaded = true;
+}
+
+// If the saved snapshot is from an earlier day, remember its video IDs (so
+// they can be excluded) and clear it so a fresh one gets captured. Runs on
+// load and again whenever the day changes while a page is left open.
+async function rotateIfStale() {
+  if (!snapshot || snapshot.day === dayKey()) return;
+  previous = { day: snapshot.day, ids: snapshot.videos.map((v) => v.id) };
+  snapshot = null;
+  captureStart = 0;
+  await browser.storage.local.set({ previous });
+  await browser.storage.local.remove("snapshot");
 }
 
 function save() {
@@ -66,7 +87,7 @@ function extractCard(card) {
 }
 
 function collect() {
-  const seen = new Set();
+  const seen = excludedIds();
   const videos = [];
   for (const card of document.querySelectorAll("ytd-rich-item-renderer")) {
     const v = extractCard(card);
@@ -79,6 +100,7 @@ function collect() {
 }
 
 async function tryCapture() {
+  await rotateIfStale();
   if (snapshot) return;
   if (!captureStart) captureStart = Date.now();
   const videos = collect();
