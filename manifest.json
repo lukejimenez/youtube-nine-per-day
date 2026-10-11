@@ -1,17 +1,42 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Ten a Day",
-  "version": "0.1.0",
-  "description": "Freezes your YouTube home feed to 10 recommended videos per day. No infinite scroll.",
-  "permissions": ["storage"],
+  "name": "Nine a Day for YouTube",
+  "version": "1.0.0",
+  "description": "Limits your YouTube home feed to nine recommended videos per day, with no infinite scroll. Everything stays on your device.",
+  "permissions": [
+    "storage"
+  ],
   "browser_specific_settings": {
-    "gecko": { "id": "yt-ten-a-day@local" }
+    "gecko": {
+      "id": "nine-a-day@lukejimenez",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["content.js"],
-      "css": ["content.css", "distractions.css", "search.css", "subscriptions.css", "watch.css", "searchbar.css", "responsive.css"],
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css",
+        "distractions.css",
+        "search.css",
+        "subscriptions.css",
+        "watch.css",
+        "searchbar.css",
+        "responsive.css"
+      ],
       "run_at": "document_start"
     }
   ]
