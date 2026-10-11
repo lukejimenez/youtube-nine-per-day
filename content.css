@@ -8,6 +8,12 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   pointer-events: none !important;
 }
 
+/* Largest a video card gets (3-across layout). Change this one number to make
+   all thumbnails bigger or smaller; both the home and subscriptions pages use it. */
+html {
+  --yt10-card-max: 280px;
+}
+
 #yt10-root {
   padding: 12px 32px 16px; /* 12px top = same gap as the video page */
   color: var(--yt-spec-text-primary, #0f0f0f);
@@ -28,10 +34,11 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
 
 :is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  /* Sized from viewport height so all 3 rows fit without scrolling:
-     (height - masthead/padding/gaps/text rows) * 16/9 + column gaps. */
-  max-width: min(1200px, calc((100vh - 354px) * 1.7778 + 32px));
+  /* Each card grows to fit the window but never past --yt10-card-max, so on a
+     big screen they stay compact (centered), and as the window narrows they
+     shrink smoothly with it. Not tied to window height or screen size. */
+  grid-template-columns: repeat(3, minmax(0, var(--yt10-card-max)));
+  justify-content: center;
   margin: 0 auto;
   gap: 20px 16px;
 }

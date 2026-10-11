@@ -18,12 +18,13 @@ ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer #primary {
   width: 100% !important;
 }
 
-/* Same grid as the home page: 3 equal columns, same gap, same width formula. */
+/* Same grid as the home page: 3 columns capped at the same card size, same gap. */
 ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer #contents {
   display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(3, minmax(0, var(--yt10-card-max))) !important;
+  justify-content: center !important;
   gap: 20px 16px !important;
-  max-width: min(1200px, calc((100vh - 354px) * 1.7778 + 32px)) !important;
+  max-width: none !important;
   margin: 0 auto !important;
   padding: 0 !important;
   width: 100% !important;
