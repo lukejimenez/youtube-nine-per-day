@@ -104,3 +104,10 @@ yt-searchbox [aria-label^="Ask" i] {
 ytd-search [aria-label^="Ask" i] {
   display: none !important;
 }
+
+/* The filter-chip row (All / Shorts / Videos...) is hidden by the uBlock rules
+   but its 56px row stayed, leaving a blank band under the top bar. Remove it
+   so results start right under the search bar. */
+ytd-search ytd-search-header-renderer {
+  display: none !important;
+}

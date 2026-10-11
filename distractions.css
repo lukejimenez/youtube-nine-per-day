@@ -86,3 +86,8 @@ ytd-mini-guide-entry-renderer[aria-label="Shorts"] {
 ytd-guide-entry-renderer:has(a[title="Shorts"]) {
   display: none !important;
 }
+
+/* Whole chip bar (not just its inner chips), so no empty band is left behind. */
+ytd-feed-filter-chip-bar-renderer {
+  display: none !important;
+}

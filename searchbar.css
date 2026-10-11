@@ -23,3 +23,55 @@ ytd-masthead #end {
   min-width: 225px !important;
   justify-content: flex-end !important;
 }
+
+/* Breathing room: make the top bar 68px instead of 56px. The search bar stays
+   vertically centered in it, so it gets (68 - 40) / 2 = 14px above and below
+   instead of 8px. YouTube positions the page content from the first two
+   variables and draws the bar itself with the height rules below, so all of
+   them are needed. Change every 68px together to adjust. */
+html,
+ytd-app,
+ytd-masthead {
+  --ytd-masthead-height: 68px !important;
+  --ytd-toolbar-height: 68px !important;
+}
+
+ytd-masthead #container,
+#masthead-container {
+  height: 68px !important;
+}
+
+/* The translucent backdrop that videos scroll behind. Two problems fixed:
+   1. It has its own height (56px), so the bottom 12px of the taller bar were
+      see-through.
+   2. In YouTube's "with chip bar" mode it is display:none, because the chip
+      bar draws the frosted surface instead. We hide the chip bar, so in that
+      mode nothing was drawn at all. Draw it ourselves in every mode, with
+      YouTube's own colors: 90% white in light mode, 80% near-black in dark
+      mode, both blurred. */
+ytd-masthead #background,
+ytd-masthead[frosted-glass-mode] #background,
+ytd-masthead[frosted-glass-mode="with-chipbar"] #background,
+ytd-masthead[frosted-glass-mode="loading-with-chipbar"] #background,
+ytd-masthead[frosted-glass-mode="without-chipbar"] #background {
+  display: block !important;
+  height: 68px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(48px) !important;
+}
+
+ytd-masthead[dark] #background,
+ytd-masthead[dark][frosted-glass-mode] #background,
+ytd-masthead[dark][frosted-glass-mode="with-chipbar"] #background,
+ytd-masthead[dark][frosted-glass-mode="loading-with-chipbar"] #background,
+ytd-masthead[dark][frosted-glass-mode="without-chipbar"] #background {
+  background: rgba(15, 15, 15, 0.8) !important;
+}
+
+/* Extra dark-mode detection (YouTube marks dark mode in a few places), with
+   higher specificity than the light rules above so dark always wins. */
+html[dark] ytd-masthead #background,
+ytd-masthead.page-dark-theme #background,
+ytd-masthead.page-dark-theme[frosted-glass-mode] #background {
+  background: rgba(15, 15, 15, 0.8) !important;
+}

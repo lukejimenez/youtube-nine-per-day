@@ -4,10 +4,10 @@
    The card contents themselves are replaced by content.js
    (restyleSubscriptions). */
 
-/* Same outer padding as the home root (16px 32px); drop YouTube's own insets. */
+/* Same outer padding as the home root (12px 32px 16px); drop YouTube's own insets. */
 ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer {
   box-sizing: border-box !important;
-  padding: 16px 32px !important;
+  padding: 12px 32px 16px !important;
   margin: 0 !important;
   max-width: none !important;
 }
@@ -23,7 +23,7 @@ ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer #contents {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 20px 16px !important;
-  max-width: min(1200px, calc((100vh - 350px) * 1.7778 + 32px)) !important;
+  max-width: min(1200px, calc((100vh - 354px) * 1.7778 + 32px)) !important;
   margin: 0 auto !important;
   padding: 0 !important;
   width: 100% !important;
