@@ -1,0 +1,15 @@
+/* Watch page: keep YouTube's normal layout, but shift the player column right
+   by half of the now-empty sidebar so it sits centered, and shrink it by 10%.
+   The sidebar still takes up its space; it's just empty (its contents are
+   hidden in distractions.css).
+
+   Only applies in the normal two-column view: theater mode, fullscreen and
+   narrow windows are left alone. To tune: change the 0.9 (size) or the 12px
+   (half the gap between the player and the sidebar). To remove: delete this
+   file and its line in manifest.json. */
+
+ytd-watch-flexy[is-two-columns_]:not([theater]):not([fullscreen]) #primary {
+  /* Scale from the top center so the column stays centered where it is. */
+  transform-origin: center top;
+  transform: translateX(calc(var(--ytd-watch-flexy-sidebar-width, 402px) / 2 + 12px)) scale(0.9);
+}
