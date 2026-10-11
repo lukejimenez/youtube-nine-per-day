@@ -13,15 +13,15 @@ A Firefox extension that gives you **nine recommended videos a day** on YouTube,
 - **Responsive:** the grid goes from 3 across to 2 to 1 as the window narrows.
 
 ## Install (Firefox on desktop, version 140 or newer)
-1. Go to the [Releases page](https://github.com/lukejimenez/youtube-nine-per-day/releases) and download the latest `.xpi` file.
-2. Drag it onto an open Firefox window and click **Add**.
+1. Download the latest signed file: [nine-a-day-1.0.0.xpi](https://github.com/lukejimenez/youtube-nine-per-day/raw/main/releases/nine-a-day-1.0.0.xpi). If Firefox installs it straight away, great. If it downloads instead, go to step 2.
+2. Drag the downloaded `.xpi` onto an open Firefox window and click **Add**.
 
 That's it. It's signed by Mozilla, so it installs on regular Firefox with no special settings.
 
 It does **not** work in Chrome, Safari, Edge, or Firefox on phones.
 
 ### Updating
-Updates aren't automatic. When there's a new release, download the new `.xpi` and install it the same way. It installs over the old one and keeps your data.
+Updates aren't automatic. When there's a new version, download the new `.xpi` from the `releases` folder and install it the same way. It installs over the old one and keeps your data.
 
 ## Privacy
 Everything stays in your browser. The extension only runs on `www.youtube.com`, saves your daily list and watch progress in Firefox's local extension storage, and sends nothing anywhere. The one network request it makes is to YouTube itself (`/oembed`), to fill in a channel name or title that was missing from the page.
