@@ -1,0 +1,106 @@
+/* Search results: video results only. Hides Shorts, channels, playlists,
+   mixes, shelves, posts and ads. Everything is scoped to ytd-search so it
+   can't affect other pages. One rule per selector so one unsupported
+   selector can't void the rest. */
+
+ytd-search ytd-reel-shelf-renderer {
+  display: none !important;
+}
+
+ytd-search grid-shelf-view-model {
+  display: none !important;
+}
+
+ytd-search ytd-video-renderer:has(a[href^="/shorts/"]) {
+  display: none !important;
+}
+
+ytd-search yt-lockup-view-model:has(a[href^="/shorts/"]) {
+  display: none !important;
+}
+
+ytd-search ytm-shorts-lockup-view-model {
+  display: none !important;
+}
+
+ytd-search ytm-shorts-lockup-view-model-v2 {
+  display: none !important;
+}
+
+ytd-search ytd-channel-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-playlist-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-radio-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-movie-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-show-renderer {
+  display: none !important;
+}
+
+ytd-search yt-lockup-view-model:not(:has(a[href^="/watch"])) {
+  display: none !important;
+}
+
+ytd-search ytd-shelf-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-horizontal-card-list-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-search-pyv-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-ad-slot-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-promoted-sparkles-web-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-background-promo-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-clarification-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-search-refinement-card-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-backstage-post-thread-renderer {
+  display: none !important;
+}
+
+ytd-search ytd-post-renderer {
+  display: none !important;
+}
+
+/* "Ask YouTube" button/entry points. Best-effort: matched by accessible label
+   since YouTube's class names for this feature are unstable. */
+ytd-masthead [aria-label^="Ask" i] {
+  display: none !important;
+}
+
+yt-searchbox [aria-label^="Ask" i] {
+  display: none !important;
+}
+
+ytd-search [aria-label^="Ask" i] {
+  display: none !important;
+}
