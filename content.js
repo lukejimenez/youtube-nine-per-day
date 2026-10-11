@@ -242,35 +242,6 @@ function restyleSubscriptions() {
   }
 }
 
-// ---- watch page centering ------------------------------------------------
-
-// watch.css shifts the player column sideways to center it. The right amount
-// depends on YouTube's internal spacing, so measure where the column actually
-// is and correct the shift until its center matches the window's center.
-function centerWatchPage() {
-  if (location.pathname !== "/watch") return;
-  const flexy = document.querySelector("ytd-watch-flexy");
-  if (
-    !flexy ||
-    !flexy.hasAttribute("is-two-columns_") ||
-    flexy.hasAttribute("theater") ||
-    flexy.hasAttribute("fullscreen")
-  ) {
-    return;
-  }
-  const primary = flexy.querySelector("#primary");
-  if (!primary) return;
-  const rect = primary.getBoundingClientRect();
-  if (!rect.width) return;
-  // The scale is around the column's center, so the center only moves with
-  // the translate: read the translate currently applied (tx of the matrix).
-  const m = new DOMMatrix(getComputedStyle(primary).transform);
-  const delta = document.documentElement.clientWidth / 2 - (rect.left + rect.width / 2);
-  if (Math.abs(delta) > 0.5) {
-    document.documentElement.style.setProperty("--yt10-watch-shift", `${m.m41 + delta}px`);
-  }
-}
-
 // ---- wiring --------------------------------------------------------------
 
 function syncHomeClass() {
@@ -286,7 +257,6 @@ function schedule() {
     if (!loaded) return;
     if (isHome()) await tryCapture();
     restyleSubscriptions();
-    centerWatchPage();
     render();
     if (await fillMissing()) render();
   }, 200);
@@ -302,7 +272,6 @@ window.addEventListener("yt-navigate-finish", () => {
   schedule();
 });
 window.addEventListener("popstate", schedule);
-window.addEventListener("resize", schedule);
 // Re-check capture while the feed is still loading but nothing is mutating.
 setInterval(schedule, 2000);
 setInterval(trackProgress, 2000);

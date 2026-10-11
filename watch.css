@@ -1,19 +1,30 @@
-/* Watch page: keep YouTube's normal layout, but shift the player column right
-   by half of the now-empty sidebar so it sits centered, and shrink it by 10%.
-   The sidebar still takes up its space; it's just empty (its contents are
-   hidden in distractions.css).
+/* Watch page: center the player column and make it about 10% smaller, using
+   real layout (no transforms or zoom), so everything inside the column keeps
+   working exactly as YouTube built it.
+
+   The sidebar is empty (its contents are hidden in distractions.css), so we
+   remove it from the layout and let the player column take the width it used
+   to have, times 0.9, centered. YouTube's own player sizing is percentage
+   based, so the video and its controls scale with the column.
 
    Only applies in the normal two-column view: theater mode, fullscreen and
-   narrow windows are left alone. To tune: change the 0.9 (size).
+   narrow windows are left alone. To tune the size: change the 0.9.
+   To remove: delete this file and its line in manifest.json. */
 
-   The sideways shift is measured and corrected by content.js
-   (centerWatchPage), which sets --yt10-watch-shift so the column's center
-   lands exactly on the window's center. The calc() below is only the first
-   guess used until that runs. To remove: delete this file and its line in
-   manifest.json, and the centerWatchPage code in content.js. */
+ytd-watch-flexy[is-two-columns_]:not([theater]):not([fullscreen]) #secondary {
+  display: none !important;
+}
+
+ytd-watch-flexy[is-two-columns_]:not([theater]):not([fullscreen]) #columns {
+  justify-content: center !important;
+}
 
 ytd-watch-flexy[is-two-columns_]:not([theater]):not([fullscreen]) #primary {
-  /* Scale from the top center so the column stays centered where it is. */
-  transform-origin: center top;
-  transform: translateX(var(--yt10-watch-shift, calc(var(--ytd-watch-flexy-sidebar-width, 402px) / 2 + 12px))) scale(0.9);
+  flex: 0 0 auto !important;
+  max-width: none !important;
+  /* 16px left margin offsets the 16px of padding on the column's right side,
+     which is what puts the video itself (not the column) dead center. */
+  margin: 0 0 0 16px !important;
+  /* Original column width = window width - sidebar width - 32px of padding. */
+  width: calc((100% - var(--ytd-watch-flexy-sidebar-width, 402px) - 32px) * 0.9) !important;
 }
