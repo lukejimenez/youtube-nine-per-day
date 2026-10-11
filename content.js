@@ -147,6 +147,26 @@ function el(tag, className, text) {
   return e;
 }
 
+// One card: thumbnail, optional red progress bar, title, channel name.
+function buildCard(v, frac) {
+  const a = el("a", "yt10-card");
+  a.href = `/watch?v=${encodeURIComponent(v.id)}`;
+  const thumb = el("div", "yt10-thumb");
+  const img = el("img");
+  img.src = `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
+  img.alt = "";
+  thumb.append(img);
+  if (frac > 0) {
+    const bar = el("div", "yt10-progress");
+    const fill = el("div", "yt10-progress-fill");
+    fill.style.width = `${Math.round(Math.min(frac, 1) * 100)}%`;
+    bar.append(fill);
+    thumb.append(bar);
+  }
+  a.append(thumb, el("div", "yt10-title", v.title || v.id), el("div", "yt10-channel", v.channel));
+  return a;
+}
+
 function buildRoot() {
   const root = el("div");
   root.id = ROOT_ID;
@@ -164,23 +184,7 @@ function buildRoot() {
   const videos = snapshot.videos.slice(0, LIMIT); // trims older 10-item snapshots
   const grid = el("div", "yt10-grid");
   for (const v of videos) {
-    const a = el("a", "yt10-card");
-    a.href = `/watch?v=${encodeURIComponent(v.id)}`;
-    const thumb = el("div", "yt10-thumb");
-    const img = el("img");
-    img.src = `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
-    img.alt = "";
-    thumb.append(img);
-    const frac = (snapshot.progress && snapshot.progress[v.id]) || 0;
-    if (frac > 0) {
-      const bar = el("div", "yt10-progress");
-      const fill = el("div", "yt10-progress-fill");
-      fill.style.width = `${Math.round(frac * 100)}%`;
-      bar.append(fill);
-      thumb.append(bar);
-    }
-    a.append(thumb, el("div", "yt10-title", v.title || v.id), el("div", "yt10-channel", v.channel));
-    grid.append(a);
+    grid.append(buildCard(v, (snapshot.progress && snapshot.progress[v.id]) || 0));
   }
   root.append(grid);
   return root;
@@ -201,6 +205,43 @@ function render() {
   browseEl.prepend(root);
 }
 
+// ---- subscriptions page --------------------------------------------------
+
+// YouTube's own cards on the subscriptions page show avatars, view counts and
+// dates. Instead of hiding those one by one (class names keep changing), swap
+// each card's contents for our own card, built from the title/channel we read
+// off it. The native cards stay in the grid, so infinite scroll keeps working.
+const isSubscriptions = () => location.pathname === "/feed/subscriptions";
+
+function nativeProgress(card) {
+  const bar = card.querySelector(
+    '#progress, [class*="progress-bar"] [style*="width"], [class*="resume-playback"] [style*="width"]'
+  );
+  const pct = bar ? parseFloat(bar.style.width) : NaN;
+  return isFinite(pct) ? pct / 100 : 0;
+}
+
+function restyleSubscriptions() {
+  if (!isSubscriptions()) return;
+  const cards = document.querySelectorAll(
+    "ytd-browse[page-subtype='subscriptions'] ytd-rich-item-renderer:not(.yt10-done):not(.yt10-skip)"
+  );
+  for (const card of cards) {
+    const v = extractCard(card);
+    if (!v) {
+      // Shorts, ads, playlists: drop. Cards with no links yet haven't rendered.
+      if (card.querySelector("a[href]") || card.querySelector("ytd-ad-slot-renderer")) {
+        card.classList.add("yt10-skip");
+      }
+      continue;
+    }
+    if (!v.title) continue; // not fully rendered yet; retry next pass
+    const frac = nativeProgress(card);
+    card.classList.add("yt10-done");
+    card.append(buildCard(v, frac));
+  }
+}
+
 // ---- wiring --------------------------------------------------------------
 
 function syncHomeClass() {
@@ -215,6 +256,7 @@ function schedule() {
     syncHomeClass();
     if (!loaded) return;
     if (isHome()) await tryCapture();
+    restyleSubscriptions();
     render();
     if (await fillMissing()) render();
   }, 200);

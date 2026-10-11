@@ -1,0 +1,64 @@
+/* Subscriptions page: lay out YouTube's native grid exactly like our home
+   grid (.yt10-root / .yt10-grid in content.css) so cards line up in the same
+   place at the same size, while keeping YouTube's native infinite scroll.
+   The card contents themselves are replaced by content.js
+   (restyleSubscriptions). */
+
+/* Same outer padding as the home root (16px 32px); drop YouTube's own insets. */
+ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer {
+  box-sizing: border-box !important;
+  padding: 16px 32px !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer #primary {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+/* Same grid as the home page: 3 equal columns, same gap, same width formula. */
+ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer #contents {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px 16px !important;
+  max-width: min(1200px, calc((100vh - 350px) * 1.7778 + 32px)) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer {
+  width: auto !important;
+  margin: 0 !important;
+}
+
+/* Remove everything that sits above/between the cards and pushes them down
+   relative to the home page: the filter-chip header, the page title/header,
+   and date/shelf section rows. */
+ytd-browse[page-subtype="subscriptions"] ytd-rich-grid-renderer > #header {
+  display: none !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] ytd-feed-filter-chip-bar-renderer {
+  display: none !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] #page-header {
+  display: none !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] ytd-rich-section-renderer {
+  display: none !important;
+}
+
+ytd-browse[page-subtype="subscriptions"] ytd-two-column-browse-results-renderer {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Non-card children (loader) span the full row. */
+ytd-browse[page-subtype="subscriptions"] ytd-continuation-item-renderer {
+  grid-column: 1 / -1 !important;
+}

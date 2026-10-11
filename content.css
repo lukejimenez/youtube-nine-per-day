@@ -14,19 +14,19 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   font-family: Roboto, Arial, sans-serif;
 }
 
-#yt10-root .yt10-header {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-header {
   font-size: 20px;
   font-weight: 500;
   margin-bottom: 4px;
 }
 
-#yt10-root .yt10-sub {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-sub {
   font-size: 13px;
   color: var(--yt-spec-text-secondary, #606060);
   margin-bottom: 20px;
 }
 
-#yt10-root .yt10-grid {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   /* Sized from viewport height so all 3 rows fit without scrolling:
@@ -36,19 +36,19 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   gap: 20px 16px;
 }
 
-#yt10-root a.yt10-card {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) a.yt10-card {
   display: block;
   color: inherit;
   text-decoration: none;
 }
 
-#yt10-root .yt10-thumb {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-thumb {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
 }
 
-#yt10-root .yt10-progress {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-progress {
   position: absolute;
   left: 0;
   right: 0;
@@ -57,12 +57,12 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   background: rgba(255, 255, 255, 0.3);
 }
 
-#yt10-root .yt10-progress-fill {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-progress-fill {
   height: 100%;
   background: #f00;
 }
 
-#yt10-root a.yt10-card img {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) a.yt10-card img {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -71,7 +71,7 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   background: var(--yt-spec-badge-chip-background, #e5e5e5);
 }
 
-#yt10-root .yt10-title {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-title {
   margin-top: 8px;
   font-size: 15px;
   font-weight: 500;
@@ -82,7 +82,7 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   overflow: hidden;
 }
 
-#yt10-root .yt10-channel {
+:is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-channel {
   margin-top: 2px;
   font-size: 13px;
   color: var(--yt-spec-text-secondary, #606060);
@@ -90,12 +90,26 @@ html.yt10-home ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
 
 /* Dark mode: YouTube's theme variables aren't reliably available here. */
 html[dark] #yt10-root,
-html[dark] #yt10-root .yt10-header,
-html[dark] #yt10-root .yt10-title {
+html[dark] :is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-header,
+html[dark] :is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-title {
   color: #fff;
 }
 
-html[dark] #yt10-root .yt10-sub,
-html[dark] #yt10-root .yt10-channel {
+html[dark] :is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-sub,
+html[dark] :is(#yt10-root, ytd-rich-item-renderer.yt10-done) .yt10-channel {
   color: #aaa;
+}
+
+/* Subscriptions page: show only our card inside each native card. */
+ytd-rich-item-renderer.yt10-done > :not(.yt10-card) {
+  display: none !important;
+}
+
+ytd-rich-item-renderer.yt10-skip {
+  display: none !important;
+}
+
+/* Until a card is processed, hide its native contents so the extras never flash. */
+ytd-browse[page-subtype="subscriptions"] ytd-rich-item-renderer:not(.yt10-done):not(.yt10-skip) > * {
+  visibility: hidden !important;
 }

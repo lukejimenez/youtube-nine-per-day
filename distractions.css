@@ -69,3 +69,20 @@ ytd-guide-section-renderer.ytd-guide-renderer.style-scope:nth-of-type(4) {
 .ytd-app.style-scope.with-chipbar {
   display: none !important;
 }
+
+/* Shorts entry in the left sidebar (expanded and collapsed versions). */
+ytd-guide-entry-renderer:has(a[href^="/shorts"]) {
+  display: none !important;
+}
+
+ytd-mini-guide-entry-renderer:has(a[href^="/shorts"]) {
+  display: none !important;
+}
+
+ytd-mini-guide-entry-renderer[aria-label="Shorts"] {
+  display: none !important;
+}
+
+ytd-guide-entry-renderer:has(a[title="Shorts"]) {
+  display: none !important;
+}
